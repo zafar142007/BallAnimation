@@ -1,0 +1,141 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <style>
+      body {
+	    background-color:#CCCCC4;
+        margin: 0px;
+        padding: 0px;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="myCanvas" width="578" height="200"></canvas>
+    <script>
+      window.requestAnimFrame = (function(callback) {
+        return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame ||
+        function(callback) {
+          window.setTimeout(callback, 1000 / 60);
+        };
+      })();
+      function drawCircles(myCircles, context) {
+        //context.rect(myCircle.x, myCircle.y, myCircle.width, myCircle.height);
+        for (var i=0; i<myCircles.length; i++){
+	        context.beginPath();
+ 
+			context.arc(myCircles[i].x, myCircles[i].y, myCircles[i].r,0, 2*Math.PI); 
+			context.fillStyle = '#F8F8FA';
+			context.fill();
+			context.closePath();
+			context.beginPath();
+			context.arc(myCircles[i].x-myCircles[i].r+30, myCircles[i].y-myCircles[i].r+30, myCircles[i].r/5,0, 2*Math.PI);
+			context.fillStyle = '#FFFFFF';
+			context.fill();
+		
+	 //     context.lineWidth = myCircle.borderWidth;
+	//		context.strokeStyle = 'black';
+	//		context.stroke();
+			context.closePath();
+			
+			context.beginPath();
+ 
+			context.arc(myCircles[i].x, myCircles[i].y, myCircles[i].r/3,0, 2*Math.PI); 
+			context.fillStyle = '#FFFFFF';
+			context.fill();
+			context.closePath();
+			
+		}
+      }
+	  
+	  function updatePosition(myCircles, startTime){
+		for ( i=0; i<myCircles.length;i++){
+			myCircle=myCircles[i];
+			var time = (new Date()).getTime() - startTime;
+
+			
+			// pixels / second
+			var newX = myCircle.dx + myCircle.x;
+			var newY = myCircle.dy + myCircle.y;
+			//Collisions with walls
+			if((newX >= (canvas.width - (myCircle.r) )) || newX<=0 ){
+			  myCircle.dx=-myCircle.dx;
+			}if( (newY >=(canvas.height - (myCircle.r))) || newY<=0) {
+			  myCircle.dy=-myCircle.dy;
+			} 
+			
+			myCircle.x += myCircle.dx;
+			myCircle.y += myCircle.dy;
+		//	}
+		}
+
+	  }
+	  function isCollision(circle1, circle2){
+		radialDistance=Math.sqrt(Math.pow((circle1.x-circle2.x),2)+Math.pow((circle1.y-circle2.y),2));
+		if(radialDistance<=(circle1.r+circle2.r+10)){
+			return true;
+		}
+		return false;
+	  }
+	  function reviseOnCollision(myCircles){
+		for(i=0; i<6; i++){
+			for(j=i+1; j<7; j++){
+				if(isCollision(myCircles[i], myCircles[j])==true)
+				{
+					temp=myCircles[i].dx;
+					myCircles[i].dx=+myCircles[j].dx;
+					myCircles[j].dx=+temp;
+					
+					temp=myCircles[i].dy;
+					myCircles[i].dy=+myCircles[j].dy;
+					myCircles[j].dy=+temp;
+					
+				}
+			}
+		
+		}
+	  }
+      function animate(myCircles, canvas, context, startTime) {
+        // update
+        updatePosition(myCircles, startTime);
+		
+		reviseOnCollision(myCircles);
+		// clear
+			
+        context.clearRect(0, 0, canvas.width, canvas.height);
+		
+	
+        drawCircles(myCircles, context);
+
+        // request new frame
+        requestAnimFrame(function() {
+          animate(myCircles, canvas, context, startTime);
+        });
+      }
+      var canvas = document.getElementById('myCanvas');
+      var context = canvas.getContext('2d');
+	  canvas.width  = window.innerWidth;
+	  canvas.height = window.innerHeight;
+      var width=(canvas.width-200)/7;
+	  var height=(canvas.height-200)/7;
+		
+	  var xx=[width, 2*width, 3*width, 4*width, 5*width, 6*width, 7*width];
+	  var yy=[height*3,height*3,height*3,height*3,height*3,height*3,height*3];
+	  var dxx=[30,28,28,39,29,28,30];
+	  var dyy=[36,28,34,29,37,28,28];
+	  //var yy=[height, 2*height, 3*height, 4*height, 5*height, 6*height, 7*height];
+	  var myCircles=[];
+	  for(i=0; i<7; i++){
+		myCircles.push({ x: xx[i], y: yy[i],r:20, dx:dxx[i], dy:dyy[i]});
+	  }
+  
+	  drawCircles(myCircles, context);
+ 
+      // wait one second before starting animation
+      setTimeout(function() {
+        var startTime = (new Date()).getTime();
+        animate(myCircles, canvas, context, startTime);
+        
+      }, 1000);
+    </script>
+  </body>
+</html>      
